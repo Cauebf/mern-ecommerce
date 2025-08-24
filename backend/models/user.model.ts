@@ -1,7 +1,26 @@
 import mongoose, { type CallbackError } from "mongoose";
 import bcrypt from "bcryptjs";
 
-const userSchema = new mongoose.Schema(
+// types
+interface IUser {
+  name: string;
+  email: string;
+  password: string;
+  role: "customer" | "admin";
+  cartItems: {
+    quantity: number;
+    product?: mongoose.Schema.Types.ObjectId | null;
+  }[];
+}
+
+interface IUserMethods {
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+type UserModel = mongoose.Model<IUser, {}, IUserMethods>;
+
+// schema
+const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
   {
     name: {
       type: String,
@@ -57,10 +76,10 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.comparePassword = async function (
   candidatePassword: string
-) {
+): Promise<boolean> {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model<IUser, UserModel>("User", userSchema);
 
 export default User;

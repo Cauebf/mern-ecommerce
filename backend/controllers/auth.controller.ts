@@ -1,5 +1,56 @@
 import type { Request, Response } from "express";
+import redis from "../lib/redis.js";
 import User from "../models/user.model.js";
+import jwt, { type JwtPayload } from "jsonwebtoken";
+import { Types } from "mongoose";
+
+const generateTokens = async (userId: Types.ObjectId) => {
+  // generate access and refresh tokens
+  const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET!, {
+    expiresIn: "15m",
+  });
+
+  const refreshToken = jwt.sign({ userId }, process.env.REFRESH_TOKEN_SECRET!, {
+    expiresIn: "7d",
+  });
+
+  return { accessToken, refreshToken };
+};
+
+const storeRefreshToken = async (
+  userId: Types.ObjectId,
+  refreshToken: string
+) => {
+  // store refresh token in redis
+  await redis.set(
+    `refresh_token:${userId}`, // key
+    refreshToken, // value
+    "EX", // expiration
+    7 * 24 * 60 * 60 // 7 days
+  );
+};
+
+const setCookies = (
+  res: Response,
+  accessToken: string,
+  refreshToken: string
+) => {
+  res.cookie("accessToken", accessToken, {
+    // key, value
+    httpOnly: true, // prevents XSS (cross-site script) attacks
+    secure: process.env.NODE_ENV === "production", // sends cookie only over HTTPS
+    sameSite: "strict", // prevents CSRF (cross-site request forgery) attacks
+    maxAge: 15 * 60 * 1000, // expires in 15 minutes
+  });
+
+  res.cookie("refreshToken", refreshToken, {
+    // key, value
+    httpOnly: true, // prevents XSS (cross-site script) attacks
+    secure: process.env.NODE_ENV === "production", // sends cookie only over HTTPS
+    sameSite: "strict", // prevents CSRF (cross-site request forgery) attacks
+    maxAge: 7 * 24 * 60 * 60 * 1000, // expires in 7 days
+  });
+};
 
 export const signup = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -13,7 +64,20 @@ export const signup = async (req: Request, res: Response) => {
 
     const user = await User.create({ name, email, password });
 
-    res.status(201).json({ user, message: "User created successfully" });
+    // authenticate
+    const { accessToken, refreshToken } = await generateTokens(user._id);
+    await storeRefreshToken(user._id, refreshToken);
+    setCookies(res, accessToken, refreshToken);
+
+    res.status(201).json({
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      message: "User created successfully",
+    });
   } catch (error) {
     if (error instanceof Error) {
       console.error("Error creating user:", error);
@@ -26,9 +90,111 @@ export const signup = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  res.send("login route");
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (user && (await user.comparePassword(password))) {
+      const { accessToken, refreshToken } = await generateTokens(user._id);
+
+      // store refresh token in redis and set cookies
+      await storeRefreshToken(user._id, refreshToken);
+      setCookies(res, accessToken, refreshToken);
+
+      res.status(200).json({
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+        message: "Logged in successfully",
+      });
+    } else {
+      res.status(401).json({ message: "Invalid email or password" });
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error logging in:", error);
+      res.status(500).json({ message: error.message });
+    } else {
+      console.error("Unexpected error:", error);
+      res.status(500).json({ message: "An unknown error occurred" });
+    }
+  }
 };
 
 export const logout = async (req: Request, res: Response) => {
-  res.send("logout route");
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (refreshToken) {
+      // delete refresh token from redis
+      const decoded = jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET!
+      ) as JwtPayload;
+      await redis.del(`refresh_token:${decoded.userId}`);
+    }
+    // delete cookies
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error logging out:", error);
+      res.status(500).json({ message: error.message });
+    } else {
+      console.error("Unexpected error:", error);
+      res.status(500).json({ message: "An unknown error occurred" });
+    }
+  }
 };
+
+// this will refresh the access token
+export const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Refresh token not found" });
+    }
+
+    const decoded = jwt.verify( 
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET!
+    ) as JwtPayload;
+    const storedToken = await redis.get(`refresh_token:${decoded.userId}`); // get refresh token from redis
+
+    // check if refresh token is valid and matches the one stored in redis
+    if (storedToken !== refreshToken) {
+      return res.status(401).json({ message: "Invalid refresh token" });
+    }
+
+    // generate new access token and set cookie
+    const accessToken = jwt.sign(
+      { userId: decoded.userId },
+      process.env.ACCESS_TOKEN_SECRET!,
+      { expiresIn: "15m" }
+    );
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.status(200).json({ message: "Access token refreshed successfully" });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error refreshing access token:", error);
+      res.status(500).json({ message: error.message });
+    } else {
+      console.error("Unexpected error:", error);
+      res.status(500).json({ message: "An unknown error occurred" });
+    }
+  }
+};
+
+// TODO: implement get profile 
