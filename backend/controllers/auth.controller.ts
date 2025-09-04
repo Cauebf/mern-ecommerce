@@ -64,7 +64,7 @@ export const signup = async (req: Request, res: Response) => {
 
     const user = await User.create({ name, email, password });
 
-    // authenticate
+    // generate access and refresh tokens and store refresh token in redis
     const { accessToken, refreshToken } = await generateTokens(user._id);
     await storeRefreshToken(user._id, refreshToken);
     setCookies(res, accessToken, refreshToken);
@@ -79,13 +79,10 @@ export const signup = async (req: Request, res: Response) => {
       message: "User created successfully",
     });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error creating user:", error);
-      res.status(500).json({ message: error.message });
-    } else {
-      console.error("Unexpected error:", error);
-      res.status(500).json({ message: "An unexpected error occurred" });
-    }
+    console.error("Error creating user:", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({ message });
   }
 };
 
@@ -114,13 +111,10 @@ export const login = async (req: Request, res: Response) => {
       res.status(401).json({ message: "Invalid email or password" });
     }
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error logging in:", error);
-      res.status(500).json({ message: error.message });
-    } else {
-      console.error("Unexpected error:", error);
-      res.status(500).json({ message: "An unknown error occurred" });
-    }
+    console.error("Error logging in:", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({ message });
   }
 };
 
@@ -142,13 +136,10 @@ export const logout = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error logging out:", error);
-      res.status(500).json({ message: error.message });
-    } else {
-      console.error("Unexpected error:", error);
-      res.status(500).json({ message: "An unknown error occurred" });
-    }
+    console.error("Error logging out:", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({ message });
   }
 };
 
@@ -161,7 +152,7 @@ export const refreshToken = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Refresh token not found" });
     }
 
-    const decoded = jwt.verify( 
+    const decoded = jwt.verify(
       refreshToken,
       process.env.REFRESH_TOKEN_SECRET!
     ) as JwtPayload;
@@ -187,14 +178,11 @@ export const refreshToken = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "Access token refreshed successfully" });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error refreshing access token:", error);
-      res.status(500).json({ message: error.message });
-    } else {
-      console.error("Unexpected error:", error);
-      res.status(500).json({ message: "An unknown error occurred" });
-    }
+    console.error("Error refreshing access token:", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({ message });
   }
 };
 
-// TODO: implement get profile 
+// TODO: implement get profile

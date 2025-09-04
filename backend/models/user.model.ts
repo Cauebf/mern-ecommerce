@@ -2,7 +2,7 @@ import mongoose, { type CallbackError } from "mongoose";
 import bcrypt from "bcryptjs";
 
 // types
-interface IUser {
+export interface IUser {
   name: string;
   email: string;
   password: string;
