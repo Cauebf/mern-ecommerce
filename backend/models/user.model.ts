@@ -2,7 +2,7 @@ import mongoose, { type CallbackError } from "mongoose";
 import bcrypt from "bcryptjs";
 
 // types
-export interface IUser {
+export interface IUser extends mongoose.Document {
   name: string;
   email: string;
   password: string;
