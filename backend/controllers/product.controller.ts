@@ -3,6 +3,17 @@ import Product from "../models/product.model.js";
 import redis from "../lib/redis.js";
 import cloudinary from "../lib/cloudinary.js";
 
+async function updateFeaturedProductsCache() {
+  try {
+    const featuredProducts = await Product.find({ isFeatured: true }).lean(); // lean() to get plain javascript objects instead of mongoose documents (which improves performance)
+
+    // store in redis for future quick access
+    await redis.set("featured_products", JSON.stringify(featuredProducts)); // stringify() to convert javascript object to JSON string
+  } catch (error) {
+    console.error("Error updating featured products cache:", error);
+  }
+}
+
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
     const products = await Product.find({}); // find all products
@@ -33,9 +44,7 @@ export const getFeaturedProducts = async (req: Request, res: Response) => {
     // store in redis for future quick access
     await redis.set(
       "featured_products",
-      JSON.stringify(featuredProductsDb), // stringify() to convert javascript object to JSON string
-      "EX",
-      60 * 60 * 24 // 1 day
+      JSON.stringify(featuredProductsDb) // stringify() to convert javascript object to JSON string
     );
 
     res.json(featuredProductsDb);
@@ -103,6 +112,72 @@ export const deleteProduct = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     console.error("Error deleting product:", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({ message });
+  }
+};
+
+export const getRecommendedProducts = async (req: Request, res: Response) => {
+  try {
+    const products = await Product.aggregate([
+      {
+        $sample: { size: 3 }, // sample() to get 3 random documents
+      },
+      {
+        // project() to select which fields to return
+        $project: {
+          _id: 1,
+          name: 1,
+          description: 1,
+          image: 1,
+          price: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({ products });
+  } catch (error) {
+    console.error("Error getting recommended products:", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({ message });
+  }
+};
+
+export const getProductsByCategory = async (req: Request, res: Response) => {
+  const { category } = req.params;
+
+  try {
+    const products = await Product.find({ category }).lean();
+
+    res.status(200).json({ products });
+  } catch (error) {
+    console.error("Error getting products by category:", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({ message });
+  }
+};
+
+export const toggleFeaturedProduct = async (req: Request, res: Response) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // toggle isFeatured field
+    product.isFeatured = !product.isFeatured;
+    const updatedProduct = await product.save(); // save() to update the document in the database
+
+    // update featured products cache in redis
+    await updateFeaturedProductsCache();
+
+    res.status(200).json({ product: updatedProduct });
+  } catch (error) {
+    console.error("Error toggling featured product:", error);
     const message =
       error instanceof Error ? error.message : "Internal server error";
     res.status(500).json({ message });
