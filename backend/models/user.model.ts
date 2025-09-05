@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 
 // types
 export interface IUser extends mongoose.Document {
+  _id: mongoose.Schema.Types.ObjectId;
   name: string;
   email: string;
   password: string;
