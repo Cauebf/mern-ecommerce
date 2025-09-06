@@ -2,9 +2,10 @@ import type { Request, Response } from "express";
 import redis from "../lib/redis.js";
 import User from "../models/user.model.js";
 import jwt, { type JwtPayload } from "jsonwebtoken";
-import { Types } from "mongoose";
+import type { AuthenticatedRequest } from "../middleware/auth.middleware.js";
+import type mongoose from "mongoose";
 
-const generateTokens = async (userId: Types.ObjectId) => {
+const generateTokens = async (userId: mongoose.Schema.Types.ObjectId) => {
   // generate access and refresh tokens
   const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET!, {
     expiresIn: "15m",
@@ -18,7 +19,7 @@ const generateTokens = async (userId: Types.ObjectId) => {
 };
 
 const storeRefreshToken = async (
-  userId: Types.ObjectId,
+  userId: mongoose.Schema.Types.ObjectId,
   refreshToken: string
 ) => {
   // store refresh token in redis
@@ -185,4 +186,13 @@ export const refreshToken = async (req: Request, res: Response) => {
   }
 };
 
-// TODO: implement get profile
+export const getProfile = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    res.status(200).json(req.user);
+  } catch (error) {
+    console.error("Error getting profile:", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({ message });
+  }
+};
