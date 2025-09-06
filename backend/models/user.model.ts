@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
     password: {
       type: String,
       required: [true, "Password is required"],
-      minlenght: [6, "Password must be at least 6 characters"],
+      minlength: [6, "Password must be at least 6 characters"],
     },
     cartItems: [
       {

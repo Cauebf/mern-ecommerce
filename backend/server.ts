@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 import authRoutes from "./routes/auth.route.js";
 import productRoutes from "./routes/product.route.js";
@@ -16,6 +17,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const allowedOrigins = ["http://localhost:5173"];
+
+app.use(
+  cors({
+    origin: allowedOrigins, // allow requests from these origins
+    credentials: true, // allow sending cookies with requests
+  })
+);
 app.use(express.json()); // allows us to access req.body
 app.use(cookieParser()); // allows us to access req.cookies
 
