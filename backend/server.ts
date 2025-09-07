@@ -25,7 +25,7 @@ app.use(
     credentials: true, // allow sending cookies with requests
   })
 );
-app.use(express.json()); // allows us to access req.body
+app.use(express.json({ limit: "10mb" })); // allows us to access req.body
 app.use(cookieParser()); // allows us to access req.cookies
 
 // routes
