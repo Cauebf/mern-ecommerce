@@ -2,27 +2,7 @@ import { create } from "zustand";
 import axios from "../lib/axios";
 import toast from "react-hot-toast";
 import type { AxiosError } from "axios";
-
-export type Product = {
-  _id?: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  category: string;
-  isFeatured?: boolean;
-};
-
-type ProductStore = {
-  products: Product[];
-  loading: boolean;
-  setProducts: (products: Product[]) => void;
-  createProduct: (productData: Product) => Promise<void>;
-  fetchAllProducts: () => Promise<void>;
-  fetchProductsByCategory: (category: string) => Promise<void>;
-  deleteProduct: (productId: string) => Promise<void>;
-  toggleFeaturedProduct: (productId: string) => Promise<void>;
-};
+import type { ProductStore } from "../types";
 
 export const useProductStore = create<ProductStore>((set) => ({
   products: [],

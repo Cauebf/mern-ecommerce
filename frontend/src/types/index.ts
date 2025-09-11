@@ -1,0 +1,48 @@
+export type User = {
+  _id: string;
+  name: string;
+  email: string;
+  role: "customer" | "admin";
+};
+
+export type UserStore = {
+  user: User | null;
+  loading: boolean;
+  checkingAuth: boolean;
+  signup: (params: {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }) => Promise<string | undefined>;
+  login: (email: string, password: string) => Promise<string | undefined>;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
+};
+
+export type Product = {
+  _id?: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  isFeatured?: boolean;
+};
+
+export type ProductStore = {
+  products: Product[];
+  loading: boolean;
+  setProducts: (products: Product[]) => void;
+  createProduct: (productData: Product) => Promise<void>;
+  fetchAllProducts: () => Promise<void>;
+  fetchProductsByCategory: (category: string) => Promise<void>;
+  deleteProduct: (productId: string) => Promise<void>;
+  toggleFeaturedProduct: (productId: string) => Promise<void>;
+};
+
+export type Category = {
+  href: string;
+  name: string;
+  imageUrl: string;
+};

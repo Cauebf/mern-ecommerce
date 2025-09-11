@@ -2,28 +2,7 @@ import { create } from "zustand";
 import axios from "../lib/axios";
 import { toast } from "react-hot-toast";
 import { AxiosError } from "axios";
-
-type User = {
-  _id: string;
-  name: string;
-  email: string;
-  role: "customer" | "admin";
-};
-
-type UserStore = {
-  user: User | null;
-  loading: boolean;
-  checkingAuth: boolean;
-  signup: (params: {
-    name: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }) => Promise<string | undefined>;
-  login: (email: string, password: string) => Promise<string | undefined>;
-  logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
-};
+import type { UserStore } from "../types";
 
 export const useUserStore = create<UserStore>((set) => ({
   user: null,

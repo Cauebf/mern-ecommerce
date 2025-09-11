@@ -1,10 +1,5 @@
 import CategoryItem from "../components/CategoryItem";
-
-export type Category = {
-  href: string;
-  name: string;
-  imageUrl: string;
-};
+import type { Category } from "../types";
 
 const categories: Category[] = [
   { href: "/jeans", name: "Jeans", imageUrl: "/jeans.jpg" },
