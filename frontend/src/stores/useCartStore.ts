@@ -19,7 +19,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
     } catch (error) {
       set({ cart: [] });
       const err = error as AxiosError<{ message?: string }>;
-      toast.error(err.response?.data?.message || "Failed to fetch cart items");
+      console.error(
+        err.response?.data?.message || "Failed to fetch cart items"
+      );
     }
   },
 
@@ -52,6 +54,43 @@ export const useCartStore = create<CartStore>((set, get) => ({
     }
   },
 
+  removeFromCart: async (productId) => {
+    try {
+      await axios.delete("/cart/", { data: { productId } });
+
+      // remove the product from the cart to update the UI immediately
+      set((prevState) => ({
+        cart: prevState.cart.filter((item) => item._id !== productId),
+      }));
+      get().calculateTotals(); // calculate subtotal and total to update the UI immediately
+    } catch (error) {
+      const err = error as AxiosError<{ message?: string }>;
+      toast.error(err.response?.data?.message || "Failed to remove from cart");
+    }
+  },
+
+  updateQuantity: async (productId, quantity) => {
+    try {
+      if (quantity <= 0) {
+        get().removeFromCart(productId);
+        return;
+      }
+
+      await axios.put(`/cart/${productId}`, { quantity });
+
+      // update the quantity of the product in the cart to update the UI immediately
+      set((prevState) => ({
+        cart: prevState.cart.map((item) =>
+          item._id === productId ? { ...item, quantity } : item
+        ),
+      }));
+      get().calculateTotals(); // calculate subtotal and total to update the UI immediately
+    } catch (error) {
+      const err = error as AxiosError<{ message?: string }>;
+      toast.error(err.response?.data?.message || "Failed to update quantity");
+    }
+  },
+
   calculateTotals: () => {
     try {
       // calculate subtotal and total to update the UI immediately
@@ -71,7 +110,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
 
       set({ subtotal, total });
     } catch (error) {
-      console.log("Error calculating totals:", error);
+      console.error("Error calculating totals:", error);
     }
   },
 }));

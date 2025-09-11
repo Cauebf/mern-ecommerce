@@ -47,7 +47,7 @@ export type ProductStore = {
   toggleFeaturedProduct: (productId: string) => Promise<void>;
 };
 
-type CartItem = Product & {
+export type CartItem = Product & {
   quantity: number;
 };
 
@@ -64,5 +64,7 @@ export type CartStore = {
 
   getCartItems: () => Promise<void>;
   addToCart: (product: Product) => Promise<void>;
+  removeFromCart: (productId: string) => Promise<void>;
+  updateQuantity: (productId: string, quantity: number) => Promise<void>;
   calculateTotals: () => void;
 };
