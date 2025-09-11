@@ -32,7 +32,7 @@ export const getCartProducts = async (
       };
     });
 
-    res.status(200).json({ cartItems });
+    res.status(200).json(cartItems);
   } catch (error) {
     console.error("Error getting cart products:", error);
     const message =

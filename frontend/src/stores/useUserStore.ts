@@ -29,7 +29,7 @@ export const useUserStore = create<UserStore>((set) => ({
       set({ loading: false });
 
       const err = error as AxiosError<{ message?: string }>;
-      return toast.error(err.response?.data?.message || "Something went wrong");
+      return toast.error(err.response?.data?.message || "Failed to signup");
     }
   },
 
@@ -47,7 +47,7 @@ export const useUserStore = create<UserStore>((set) => ({
       set({ loading: false });
 
       const err = error as AxiosError<{ message?: string }>;
-      return toast.error(err.response?.data?.message || "Something went wrong");
+      return toast.error(err.response?.data?.message || "Failed to login");
     }
   },
 
@@ -57,9 +57,7 @@ export const useUserStore = create<UserStore>((set) => ({
       set({ user: null });
     } catch (error) {
       const err = error as AxiosError<{ message?: string }>;
-      toast.error(
-        err.response?.data?.message || "Something went wrong on logout"
-      );
+      toast.error(err.response?.data?.message || "Failed to logout");
     }
   },
 
@@ -67,9 +65,9 @@ export const useUserStore = create<UserStore>((set) => ({
     set({ checkingAuth: true });
 
     try {
-      const response = await axios.get("/auth/profile");
+      const res = await axios.get("/auth/profile");
 
-      set({ user: response.data, checkingAuth: false });
+      set({ user: res.data, checkingAuth: false });
     } catch (error) {
       set({ checkingAuth: false, user: null });
     }

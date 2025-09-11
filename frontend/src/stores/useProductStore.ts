@@ -15,6 +15,7 @@ export const useProductStore = create<ProductStore>((set) => ({
 
     try {
       const res = await axios.post("/products", productData);
+
       // this will add the product to the store to update the UI immediately
       set((prevState) => ({
         products: [...prevState.products, res.data.product],
@@ -33,8 +34,8 @@ export const useProductStore = create<ProductStore>((set) => ({
     set({ loading: true });
 
     try {
-      const response = await axios.get("/products");
-      set({ products: response.data.products, loading: false });
+      const res = await axios.get("/products");
+      set({ products: res.data.products, loading: false });
     } catch (error) {
       set({ loading: false });
 
@@ -47,8 +48,8 @@ export const useProductStore = create<ProductStore>((set) => ({
     set({ loading: true });
 
     try {
-      const response = await axios.get(`/products/category/${category}`);
-      set({ products: response.data.products, loading: false });
+      const res = await axios.get(`/products/category/${category}`);
+      set({ products: res.data.products, loading: false });
     } catch (error) {
       set({ loading: false });
 
@@ -62,6 +63,7 @@ export const useProductStore = create<ProductStore>((set) => ({
 
     try {
       await axios.delete(`/products/${productId}`);
+
       // this will remove the product from the store to update the UI immediately
       set((prevProducts) => ({
         products: prevProducts.products.filter(
@@ -82,12 +84,13 @@ export const useProductStore = create<ProductStore>((set) => ({
     set({ loading: true });
 
     try {
-      const response = await axios.patch(`/products/${productId}`);
+      const res = await axios.patch(`/products/${productId}`);
+      
       // this will update the isFeatured prop of the product in the store to update the UI immediately
       set((prevState) => ({
         products: prevState.products.map((product) =>
           product._id === productId
-            ? { ...product, isFeatured: response.data.product.isFeatured }
+            ? { ...product, isFeatured: res.data.product.isFeatured }
             : product
         ),
         loading: false,

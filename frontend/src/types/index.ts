@@ -1,3 +1,9 @@
+export type Category = {
+  href: string;
+  name: string;
+  imageUrl: string;
+};
+
 export type User = {
   _id: string;
   name: string;
@@ -41,8 +47,22 @@ export type ProductStore = {
   toggleFeaturedProduct: (productId: string) => Promise<void>;
 };
 
-export type Category = {
-  href: string;
-  name: string;
-  imageUrl: string;
+type CartItem = Product & {
+  quantity: number;
+};
+
+type Coupon = {
+  code: string;
+  discountPercentage: number;
+};
+
+export type CartStore = {
+  cart: CartItem[];
+  coupon: Coupon | null;
+  subtotal: number;
+  total: number;
+
+  getCartItems: () => Promise<void>;
+  addToCart: (product: Product) => Promise<void>;
+  calculateTotals: () => void;
 };

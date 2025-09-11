@@ -9,7 +9,7 @@ import { protectedRoute } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/", protectedRoute, getCartProducts);
+router.get("/", protectedRoute, getCartProducts);
 router.post("/", protectedRoute, addToCart);
 router.delete("/", protectedRoute, removeAllFromCart);
 router.put("/:id", protectedRoute, updateQuantity);
