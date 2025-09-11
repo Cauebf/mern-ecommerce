@@ -3,7 +3,7 @@ import axios from "../lib/axios";
 import toast from "react-hot-toast";
 import type { AxiosError } from "axios";
 
-type Product = {
+export type Product = {
   _id?: string;
   name: string;
   description: string;
@@ -19,6 +19,7 @@ type ProductStore = {
   setProducts: (products: Product[]) => void;
   createProduct: (productData: Product) => Promise<void>;
   fetchAllProducts: () => Promise<void>;
+  fetchProductsByCategory: (category: string) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
   toggleFeaturedProduct: (productId: string) => Promise<void>;
 };
@@ -53,6 +54,20 @@ export const useProductStore = create<ProductStore>((set) => ({
 
     try {
       const response = await axios.get("/products");
+      set({ products: response.data.products, loading: false });
+    } catch (error) {
+      set({ loading: false });
+
+      const err = error as AxiosError<{ error?: string }>;
+      toast.error(err.response?.data?.error || "Failed to fetch products");
+    }
+  },
+
+  fetchProductsByCategory: async (category) => {
+    set({ loading: true });
+
+    try {
+      const response = await axios.get(`/products/category/${category}`);
       set({ products: response.data.products, loading: false });
     } catch (error) {
       set({ loading: false });
