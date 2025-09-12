@@ -9,6 +9,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   coupon: null,
   total: 0,
   subtotal: 0,
+  isCouponApplied: false,
 
   getCartItems: async () => {
     try {
@@ -19,9 +20,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
     } catch (error) {
       set({ cart: [] });
       const err = error as AxiosError<{ message?: string }>;
-      console.error(
-        err.response?.data?.message || "Failed to fetch cart items"
-      );
+      toast.error(err.response?.data?.message || "Failed to fetch cart items");
     }
   },
 

@@ -61,6 +61,7 @@ export type CartStore = {
   coupon: Coupon | null;
   subtotal: number;
   total: number;
+  isCouponApplied: boolean;
 
   getCartItems: () => Promise<void>;
   addToCart: (product: Product) => Promise<void>;
