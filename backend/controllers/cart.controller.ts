@@ -81,7 +81,7 @@ export const removeAllFromCart = async (
   res: Response
 ) => {
   try {
-    const { productId } = req.body;
+    const { productId } = req.body ?? {};
     const user = req.user;
 
     if (!user) {

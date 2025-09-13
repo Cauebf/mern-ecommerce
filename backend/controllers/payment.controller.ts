@@ -60,6 +60,7 @@ export const createCheckoutSession = async (
           },
           unit_amount: amount,
         },
+        quantity: product.quantity || 1,
       };
     });
 
@@ -103,8 +104,8 @@ export const createCheckoutSession = async (
       },
     });
 
-    // create new coupon for user if total amount is greater than or equal to $200 (200000 cents)
-    if (totalAmount >= 200000) {
+    // create new coupon for user if total amount is greater than or equal to $200 (20000 cents)
+    if (totalAmount >= 20000) {
       await createNewCoupon(user._id);
     }
 
@@ -131,6 +132,12 @@ export const checkoutSuccess = async (
 
     // check if payment is successful
     if (session.payment_status === "paid") {
+      // check if order already exists
+      const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
+      if (existingOrder) {
+        return res.status(200).json({ orderId: existingOrder._id });
+      }
+
       // update coupon in database to inactive so it can't be used again by the user
       if (session.metadata?.couponCode) {
         await Coupon.findOneAndUpdate(
