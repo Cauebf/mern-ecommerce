@@ -11,7 +11,7 @@ export const getCoupon = async (req: AuthenticatedRequest, res: Response) => {
     }
 
     // find all active coupons for the user
-    const coupon = await Coupon.find({ userId: user._id, isActive: true });
+    const coupon = await Coupon.findOne({ userId: user._id, isActive: true });
 
     res.status(200).json(coupon || null);
   } catch (error) {

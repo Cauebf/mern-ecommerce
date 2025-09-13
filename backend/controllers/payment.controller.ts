@@ -15,6 +15,9 @@ async function createStripeCoupon(discountPercentage: number) {
 }
 
 async function createNewCoupon(userId: mongoose.Schema.Types.ObjectId) {
+  // delete old coupon for the user
+  await Coupon.findOneAndDelete({ userId });
+
   // create new coupon for the user in the database
   const newCoupon = new Coupon({
     code: "GIFT" + Math.random().toString(36).substring(2, 8).toUpperCase(), // generate random coupon code

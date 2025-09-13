@@ -63,6 +63,9 @@ export type CartStore = {
   total: number;
   isCouponApplied: boolean;
 
+  getMyCoupon: () => Promise<void>;
+  applyCoupon: (code: string) => Promise<void>;
+  removeCoupon: () => void;
   getCartItems: () => Promise<void>;
   clearCart: () => Promise<void>;
   addToCart: (product: Product) => Promise<void>;
