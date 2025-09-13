@@ -85,7 +85,7 @@ export const useProductStore = create<ProductStore>((set) => ({
 
     try {
       const res = await axios.patch(`/products/${productId}`);
-      
+
       // this will update the isFeatured prop of the product in the store to update the UI immediately
       set((prevState) => ({
         products: prevState.products.map((product) =>
@@ -100,6 +100,22 @@ export const useProductStore = create<ProductStore>((set) => ({
 
       const err = error as AxiosError<{ error?: string }>;
       toast.error(err.response?.data?.error || "Failed to toggle featured");
+    }
+  },
+
+  fetchFeaturedProducts: async () => {
+    set({ loading: true });
+
+    try {
+      const res = await axios.get("/products/featured");
+      set({ products: res.data, loading: false });
+    } catch (error) {
+      set({ loading: false });
+
+      const err = error as AxiosError<{ error?: string }>;
+      toast.error(
+        err.response?.data?.error || "Failed to fetch featured products"
+      );
     }
   },
 }));

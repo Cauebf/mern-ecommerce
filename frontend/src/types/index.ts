@@ -45,6 +45,7 @@ export type ProductStore = {
   fetchProductsByCategory: (category: string) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
   toggleFeaturedProduct: (productId: string) => Promise<void>;
+  fetchFeaturedProducts: () => Promise<void>;
 };
 
 export type CartItem = Product & {
