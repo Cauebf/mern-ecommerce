@@ -109,7 +109,7 @@ export const login = async (req: Request, res: Response) => {
         message: "Logged in successfully",
       });
     } else {
-      res.status(401).json({ message: "Invalid email or password" });
+      res.status(400).json({ message: "Invalid email or password" });
     }
   } catch (error) {
     console.error("Error logging in:", error);
@@ -150,7 +150,7 @@ export const refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({ message: "Refresh token not found" });
+      return res.status(400).json({ message: "Refresh token not found" });
     }
 
     const decoded = jwt.verify(
@@ -161,7 +161,12 @@ export const refreshToken = async (req: Request, res: Response) => {
 
     // check if refresh token is valid and matches the one stored in redis
     if (storedToken !== refreshToken) {
-      return res.status(401).json({ message: "Invalid refresh token" });
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
     // generate new access token and set cookie
@@ -177,7 +182,15 @@ export const refreshToken = async (req: Request, res: Response) => {
       maxAge: 15 * 60 * 1000,
     });
 
-    res.status(200).json({ message: "Access token refreshed successfully" });
+    res.status(200).json({
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      message: "Access token refreshed successfully",
+    });
   } catch (error) {
     console.error("Error refreshing access token:", error);
     const message =

@@ -24,6 +24,7 @@ export type UserStore = {
   login: (email: string, password: string) => Promise<string | undefined>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  refreshToken: () => Promise<void>;
 };
 
 export type Product = {
