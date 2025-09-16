@@ -35,7 +35,22 @@ app.use(
     max: 100, // limit each IP to 100 requests per windowMs
   })
 );
-app.use(helmet()); // secure HTTP headers to protect against common vulnerabilities
+app.use(
+  helmet({
+    // secure HTTP headers to protect against common vulnerabilities
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'", // allow scripts from the same origin
+          "https://js.stripe.com", // allow scripts from Stripe
+        ],
+        connectSrc: ["'self'", "https://api.stripe.com"], // allow connections to Stripe
+        frameSrc: ["'self'", "https://js.stripe.com"], // allow frames from Stripe
+      },
+    },
+  })
+);
 app.use(express.json({ limit: "10mb" })); // allows us to access req.body
 app.use(cookieParser()); // allows us to access req.cookies
 
