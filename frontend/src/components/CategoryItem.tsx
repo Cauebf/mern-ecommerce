@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { Category } from "../pages/HomePage";
+import type { Category } from "../types";
 
 const CategoryItem = ({ category }: { category: Category }) => {
   return (

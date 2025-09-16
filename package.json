@@ -5,7 +5,7 @@
   "main": "backend/server.ts",
   "scripts": {
     "dev": "tsx watch backend/server.ts",
-    "build": "tsc --project backend/tsconfig.json",
+    "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend && tsc --project backend/tsconfig.json",
     "start": "node backend/dist/server.js"
   },
   "keywords": [],
@@ -19,6 +19,8 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
     "ioredis": "^5.7.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
