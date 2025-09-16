@@ -47,6 +47,7 @@ app.use(
         ],
         connectSrc: ["'self'", "https://api.stripe.com"], // allow connections to Stripe
         frameSrc: ["'self'", "https://js.stripe.com"], // allow frames from Stripe
+        imgSrc: ["'self'", "data:", "https://res.cloudinary.com"], // allow images from Cloudinary
       },
     },
   })
