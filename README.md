@@ -61,6 +61,7 @@ Backend is an Express + TypeScript app (`/backend`) and frontend is React + Vite
 - [**TypeScript**](https://www.typescriptlang.org/) – Strong typing for better developer tooling and fewer bugs.
 - [**Tailwind CSS**](https://tailwindcss.com/) – Utility-first CSS framework for rapidly building custom designs.
 - [**Zustand**](https://github.com/pmndrs/zustand) – Lightweight, minimal state-management solution for React.
+- [**Axios**](https://axios-http.com/) – Promise-based HTTP client for making API requests from the browser.
 - [**React Router**](https://reactrouter.com/) – Declarative routing for React applications.
 - [**React Hot Toast**](https://react-hot-toast.com/) – Lightweight, customizable toast notifications for user feedback.
 - [**Recharts**](https://recharts.org/en-US/) – Charting library for building customizable data visualizations.
@@ -71,6 +72,7 @@ Backend is an Express + TypeScript app (`/backend`) and frontend is React + Vite
 - **httpOnly Cookies** – Used for securely storing refresh tokens in the browser, inaccessible to JavaScript.
 - [**Helmet**](https://helmetjs.github.io/) – Secures Express apps by setting various HTTP headers.
 - [**CORS**](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) – Mechanism to allow controlled access to resources from different domains.
+- [**bcrypt**](https://www.npmjs.com/package/bcrypt) – Library for hashing passwords and comparing password hashes securely.
 
 #### 🧰 **Dev Tools**
 
